@@ -1,0 +1,19 @@
+{
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/connections",
+      "handler": "Connections.find",
+      "config": {
+        "policies": []
+      }
+    },{
+      "method": "DELETE",
+      "path": "/connections/:user_id",
+      "handler": "Connections.delete",
+      "config": {
+        "policies": []
+      }
+    }
+  ]
+}
