@@ -1,8 +1,13 @@
 # Strapi plugin socketio
 
-`Strapi-plugin-socketio` is a plugin made for` strapi cms` making integration with socket.io easy. All you need to do is join users to the desired rooms and send messages to those users at any time, without worrying about configuration or connections.
+`strapi-plugin-socketio` is a plugin made for` strapi cms` making integration with socket.io easy. All you need to do is join users to the desired rooms and send messages to those users at any time, without worrying about configuration or connections.
 
-Also in your frontend application, all you need is to use `socket.io-client` and connect to the strapi endpoint by passing the user's JWT token in the handskae and signing up for the events you want and receiving your messages.
+To start using this plugin all you need to do is install this package on your package.json
+```bash
+yarn add strapi-plugin-socketio
+```
+
+On your frontend application, you will need to use `socket.io-client` to connect on strapi endpoint by passing the user's JWT token in the handshake and signing up for events you want to receive messages.
 
 ```js
 import socketIOClient from "socket.io-client";
