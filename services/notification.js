@@ -1,12 +1,9 @@
 module.exports = {
   join : async (userId, roomId) => {
-    const connections = await strapi.plugins['socketio'].services.connections.all()
-    if(Object.keys(connections).includes(String(userId))){
-      strapi.io.sockets.connected[connections[String(userId)]].join(roomId)
-    }    
+    const connection = Object.values(strapi.io.sockets.connected).find(socket => socket.user_id = String(userId))
+    if(connection) await strapi.io.sockets.connected[connection.id].join(String(roomId))
   },
   send : async (endpointId, eventKey, data) => {
-    //endpointId could be the userId or a created Room
-    strapi.io.to(endpointId).emit(eventKey, data)    
+    strapi.io.to(String(endpointId)).emit(String(eventKey), data)    
   }  
 }

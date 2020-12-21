@@ -93,16 +93,13 @@ const HomePage = ({ history }) => {
           },
         ]}
         title={{
-          label: 'Socket.IO',
+          label: 'Socket.io',
         }}
-        content="Monitoramento das conexões com socket." />
+        content="Fast setup to enable socket.io and monitoring connections on your application." />
 
       <div className="alert alert-success">
-        <b>Como funciona?</b> Este plugin registra todos os usuários conectados em memória,
-        também expõe o <b>socket.io</b> por meio da variável <b>strapi.io</b> ficando acessível em
-        qualquer controller/service da sua aplicação. Toda vêz que você desejar enviar uma notificação
-        a outro usuário, basta utilizar o comando <b><code>"await strapi.io.send("USER_ID/ROOM_ID", "EVENT", "MESSAGE")"</code></b>,
-        se o usuário estiver conectado, ele receberá a notificação.
+        <b>How it works?</b> Jus call <b><code>"await strapi.io.send("USER_ID/ROOM_ID", "EVENT", "MESSAGE")"</code></b>, 
+        anywhere on your strapi application and send messages to connected users.
       </div>
 
       {connections.length == 0 &&
