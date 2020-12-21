@@ -1,41 +1,33 @@
+'use strict'
+
 module.exports = () => {
-
-  // ******************************************************* //
-  // append socketio as a middleware to register policies    //
-  // ******************************************************* //
-  strapi.config.middleware.load.after.push('socketio')
-
-  // ******************************************************************* //
-  // This script attach socket.io to the server, to be used anywhere     //
-  // ******************************************************************* //
-  // import socket io
+  // ********************************************* //
+  // This script handle new connections and attach //
+  // socket.io to the server, to be used anywhere  //
+  // ********************************************* //  
   const io = require('socket.io')(strapi.server);
-
-  // listen for user connection
   io.on('connect', async function (socket) {
     try {
       const { jwt } = socket.handshake.query
       const payload = await strapi.plugins['users-permissions'].services.jwt.verify(jwt);
-      // retrieve old socket with same user_id and remove it if exists
-      const oldSocket = await Object.values(strapi.io.sockets.connected).find(socket => socket.user_id == payload.id)
-      if (oldSocket) {
-        oldSocket.disconnect()
-      }
-      // search for user connection by jwt payload
+      // 1 - kill old connections for this user
+      await strapi.plugins.socketio.services.connection.disconnect(payload.id)
+      // 2 - load authenticated user data
       const data = await strapi.query('user', 'users-permissions').findOne({ id: payload.id });
-      // check if user exists
+      // 3 - check if user exists
       if (!data) throw Error("User not found")
-      // register user id on connected socket
+      // 4 - register user id on connected socket
       socket.user_id = payload.id
-      // join user to a room called user_${id} for future use
+      // 5 - join user to a room called user_${id} for future use
       await socket.join(`user::${payload.id}`)
-      // hook socket connection
-      await strapi.plugins.socketio.config.functions.connection(socket, data)      
+      // 6 - hook socket connection for extensions implementation
+      await strapi.plugins.socketio.config.functions.connection(socket, data)
     } catch (error) {
       socket.disconnect()
     }
   });
-  strapi.io = io; // register socket io inside strapi main object to use it globally anywhere  
+  // 7 - register socket io inside strapi core to use it globally
+  strapi.io = io; 
   strapi.io.send = strapi.plugins.socketio.services.notification.send
   strapi.io.join = strapi.plugins.socketio.services.notification.join
 };
