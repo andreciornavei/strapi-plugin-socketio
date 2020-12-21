@@ -12,14 +12,13 @@ module.exports = () => {
   const io = require('socket.io')(strapi.server);
 
   // listen for user connection
-  io.on('connection', async function (socket) {
+  io.on('connect', async function (socket) {
     try {
       const { jwt } = socket.handshake.query
       const payload = await strapi.plugins['users-permissions'].services.jwt.verify(jwt);
       const connection = await strapi.plugins['socketio'].services.connections.get(payload.id);
       if (connection) {
         // user_id already defined, redefine socket connection
-        console.log("Disconnecting old user:", payload.id)
         io.to(connection).disconnect()
       }
       // search for user connection by jwt payload
@@ -28,11 +27,10 @@ module.exports = () => {
       if (!data) throw Error("User not found")
       // register connection on global variable access
       await strapi.plugins['socketio'].services.connections.set(payload.id, socket.id);
-      // new connection registered
-      console.log('Client connectet:', payload.id, "::", socket.id)
+      // hook socket connection
+      await strapi.plugins['socketio'].config.functions.connection(socket, data)
       // listen for user diconnect
       socket.on('disconnect', async () => {
-        console.log('The user', payload.id, 'was disconnected')
         await strapi.plugins['socketio'].services.connections.del(payload.id);
       });
     } catch (error) {
@@ -41,5 +39,6 @@ module.exports = () => {
     }
   });
   strapi.io = io; // register socket io inside strapi main object to use it globally anywhere  
-
+  strapi.io.send = strapi.plugins['socketio'].services.notification.send
+  strapi.io.join = strapi.plugins['socketio'].services.notification.join
 };

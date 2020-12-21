@@ -1,27 +1,63 @@
 import React, { memo, useEffect, useState } from 'react';
 import pluginId from '../../pluginId';
-
+import { VscSyncIgnored } from "react-icons/vsc"
+import { Table, Button } from '@buffetjs/core';
+import { Header } from '@buffetjs/custom';
 import {
   useGlobalContext,
-  PluginHeader,
   ContainerFluid,
-  Button,
-  auth,
   request
 } from 'strapi-helper-plugin';
 
-const listButtonStyle = {
-  fontSize: "12px",
-  padding: "0px 15px",
-  height: "23px",
-  margin: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  minWidth: "auto",
-}
+const headers = [
+  {
+    name: 'Id',
+    value: 'id'
+  },
+  {
+    name: 'Socket',
+    value: 'socket_id'
+  },
+  {
+    name: 'Username',
+    value: 'username'
+  },
+  {
+    name: 'Email',
+    value: 'email'
+  }, {
+    name: "Actions"
+  }
+];
+
+const CustomRow = ({ row }) => {
+  const { id, socket_id, username, email } = row;
+  return (
+    <tr>
+      <td>
+        {id}
+      </td>
+      <td>
+        {socket_id}
+      </td>
+      <td>
+        {username}
+      </td>
+      <td>
+        {email}
+      </td>
+      <td width="150">
+        <Button color="secondary" onClick={() => {
+          disconnect(data.id)
+        }}><VscSyncIgnored size={16} /> kill</Button>
+      </td>
+    </tr>
+  );
+};
+
 
 const HomePage = ({ history }) => {
+
   const globalContext = useGlobalContext();
   const [connections, setConnections] = useState([])
 
@@ -41,24 +77,31 @@ const HomePage = ({ history }) => {
     fetchConnections()
   }, []);
 
+
+
+
   return (
     <ContainerFluid>
-      <PluginHeader
-        title="Socket.IO"
-        description="Monitoramento das conexões com socket."
+
+      <Header
         actions={[
           {
             label: "Atualizar",
-            primary: true,
+            color: 'secondary',
+            type: 'button',
             onClick: () => { fetchConnections() }
           },
         ]}
-      />
+        title={{
+          label: 'Socket.IO',
+        }}
+        content="Monitoramento das conexões com socket." />
+
       <div className="alert alert-success">
         <b>Como funciona?</b> Este plugin registra todos os usuários conectados em memória,
         também expõe o <b>socket.io</b> por meio da variável <b>strapi.io</b> ficando acessível em
         qualquer controller/service da sua aplicação. Toda vêz que você desejar enviar uma notificação
-        a outro usuário, basta utilizar o comando <b><code>"await strapi.plugins['socketio'].services.notification.send("USER_ID", "CHANNEL", "MESSAGE")"</code></b>,
+        a outro usuário, basta utilizar o comando <b><code>"await strapi.io.send("USER_ID/ROOM_ID", "EVENT", "MESSAGE")"</code></b>,
         se o usuário estiver conectado, ele receberá a notificação.
       </div>
 
@@ -68,24 +111,17 @@ const HomePage = ({ history }) => {
         </div>
       }
       {connections.length > 0 &&
-        <table className="shadow-sm table striped bordered hover border">
-          <tr className="bg-light">
-            <th>User ID</th>
-            <th>Socket ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>&nbsp;</th>
-          </tr>
-          {connections.map((connection, index) => {
-            return <tr key={index}>
-              <td width={80}>{connection.id}</td>
-              <td width={80}>{connection.socket_id}</td>
-              <td width={80}>{connection.username}</td>
-              <td>{connection.email}</td>
-              <td width={80}><Button primary small label="Desconectar" style={listButtonStyle} onClick={() => disconnect(connection.id)} /></td>
-            </tr>
-          })}
-        </table>
+
+        <Table
+          headers={headers}
+          onClickRow={(e, data) => {
+            console.log(data);
+          }}
+          onSelect={(row, index) => { }}
+          onSelectAll={() => { }}
+          customRow={CustomRow}
+          rows={connections}
+        />
       }
     </ContainerFluid>
   );

@@ -5,7 +5,7 @@ module.exports = {
   find: async (ctx) => {
     // Send 200 `ok`
     const connections = await strapi.plugins['socketio'].services.connections.all();
-    const data = await strapi.query('user', 'users-permissions').find({ id: { $in: Object.keys(connections) } });
+    const data = await strapi.query('user', 'users-permissions').find({ id_in: Object.keys(connections) });
     ctx.send({
       connections: data.map((item) => {
         item.socket_id = connections[item.id]
